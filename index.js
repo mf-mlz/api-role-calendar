@@ -5,6 +5,9 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const app = express();
 const { random } = require('lodash');
+const cors = require('cors');
+
+app.use(cors());
 
 
 /* Module [Config, Connection] */
