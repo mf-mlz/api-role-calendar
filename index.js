@@ -222,5 +222,23 @@ app.get('/rolesn', async (req, res) => {
     }
 });
 
+//Get Events
+app.get('/events', async (req, res) => {
+    try {
+        const db = await connection.getConnection();
+
+        /* 
+            Obtener los roles del Mes
+        */
+        const sql = 'SELECT * FROM `events` WHERE month = ? AND year = ?';
+        const [rows, fields] = await db.execute(sql, [month, currentYear]);
+        res.status(200).send(rows);
+        db.release();
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
 const port = process.env.port || 4000;
 app.listen(port, () => console.log("Escuchando en el puerto"));
