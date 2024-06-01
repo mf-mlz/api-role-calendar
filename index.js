@@ -31,6 +31,7 @@ const month = currentMonth + 1;
 const currentYear = currentDate.getFullYear();
 const numberOfDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 const sundaysInMonth = [];
+const dateCurrently = new Date().toISOString().split('.')[0];
 
 for (let day = 1; day <= numberOfDaysInMonth; day++) {
     const date = new Date(currentYear, currentMonth, day);
@@ -70,7 +71,7 @@ app.get('/rolesb', async (req, res) => {
             let count = 0;
             for (const user of randomUsers) {
                 const insertSql = 'INSERT INTO rolesb (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
-                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, null]);
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
                 count++;
             }
 
@@ -115,7 +116,7 @@ app.get('/rolesl', async (req, res) => {
             let count = 0;
             for (const user of randomUsers) {
                 const insertSql = 'INSERT INTO rolesl (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
-                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, null]);
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
                 count++;
             }
 
@@ -160,7 +161,7 @@ app.get('/roleso', async (req, res) => {
             let count = 0;
             for (const user of randomUsers) {
                 const insertSql = 'INSERT INTO roleso (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
-                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, null]);
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
                 count++;
             }
 
@@ -205,7 +206,7 @@ app.get('/rolesn', async (req, res) => {
             let count = 0;
             for (const user of randomUsers) {
                 const insertSql = 'INSERT INTO rolesn (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
-                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, null]);
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
                 count++;
             }
 
