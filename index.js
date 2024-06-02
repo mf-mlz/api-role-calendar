@@ -59,8 +59,17 @@ app.get('/rolesb', async (req, res) => {
             const [rows, fields] = await db.execute(sql);
             const randomUsers = [];
 
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
+
             /* Obtenemos 4 Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
-            for (let index = 0; index < 4; index++) {
+            for (let index = 0; index < sundaysInMonth.length; index++) {
                 const randomIndex = random(0, rows.length - 1);
                 const selectedUser = rows.splice(randomIndex, 1)[0];
                 randomUsers.push(selectedUser);
@@ -104,8 +113,17 @@ app.get('/rolesl', async (req, res) => {
             const [rows, fields] = await db.execute(sql);
             const randomUsers = [];
 
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
+
             /* Obtenemos 4 Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
-            for (let index = 0; index < 4; index++) {
+            for (let index = 0; index < sundaysInMonth.length; index++) {
                 const randomIndex = random(0, rows.length - 1);
                 const selectedUser = rows.splice(randomIndex, 1)[0];
                 randomUsers.push(selectedUser);
@@ -148,9 +166,19 @@ app.get('/roleso', async (req, res) => {
             const sql = 'SELECT * FROM userso WHERE status = 1';
             const [rows, fields] = await db.execute(sql);
             const randomUsers = [];
+            let userRandomExtra = 0;
+
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
 
             /* Obtenemos 4 Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
-            for (let index = 0; index < 4; index++) {
+            for (let index = 0; index < sundaysInMonth.length; index++) {
                 const randomIndex = random(0, rows.length - 1);
                 const selectedUser = rows.splice(randomIndex, 1)[0];
                 randomUsers.push(selectedUser);
@@ -193,9 +221,19 @@ app.get('/rolesn', async (req, res) => {
             const sql = 'SELECT * FROM usersn WHERE status = 1';
             const [rows, fields] = await db.execute(sql);
             const randomUsers = [];
+            let userRandomExtra = 0;
 
-            /* Obtenemos 4 Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
-            for (let index = 0; index < 4; index++) {
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
+
+            /* Obtenemos (n) Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
+            for (let index = 0; index < sundaysInMonth.length; index++) {
                 const randomIndex = random(0, rows.length - 1);
                 const selectedUser = rows.splice(randomIndex, 1)[0];
                 randomUsers.push(selectedUser);
