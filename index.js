@@ -261,6 +261,116 @@ app.get('/rolesn', async (req, res) => {
     }
 });
 
+//Get Roles Domingo Oración to currently month => year
+app.get('/rolesdo', async (req, res) => {
+    try {
+        const db = await connection.getConnection();
+
+        /* Por seguridad que no se dupliquen los datos, verificamos si en la Tabla rolesN
+           ya exiten registros les año y mes actual, de ser así, ya no ejectamos ninguna inserción 
+        */
+        const sqlVerify = 'SELECT * FROM `rolesdo` WHERE month = ? AND year = ?';
+        const [rowsVerify, fieldsVerify] = await db.execute(sqlVerify, [month, currentYear]);
+
+        if (rowsVerify.length === 0) {
+            const sql = 'SELECT * FROM usersdo WHERE status = 1';
+            const [rows, fields] = await db.execute(sql);
+            const randomUsers = [];
+            let userRandomExtra = 0;
+
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
+
+            /* Obtenemos (n) Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
+            for (let index = 0; index < sundaysInMonth.length; index++) {
+                const randomIndex = random(0, rows.length - 1);
+                const selectedUser = rows.splice(randomIndex, 1)[0];
+                randomUsers.push(selectedUser);
+
+            }
+
+            /* Los insertamos en la BD en la Tabla [rolesdo]  */
+            let count = 0;
+            for (const user of randomUsers) {
+                const insertSql = 'INSERT INTO rolesdo (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
+                count++;
+            }
+
+            /* Regresamos los registros de los rolesdo */
+            const [rowsRolsDo, fieldsRolsDo] = await db.execute(sqlVerify, [month, currentYear]);
+            res.status(200).send(rowsRolsDo);
+        } else {
+            res.status(200).send(rowsVerify);
+        }
+
+        db.release();
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+//Get Roles Santa Cena to currently month => year
+app.get('/rolessc', async (req, res) => {
+    try {
+        const db = await connection.getConnection();
+
+        /* Por seguridad que no se dupliquen los datos, verificamos si en la Tabla rolesN
+           ya exiten registros les año y mes actual, de ser así, ya no ejectamos ninguna inserción 
+        */
+        const sqlVerify = 'SELECT * FROM `rolessc` WHERE month = ? AND year = ?';
+        const [rowsVerify, fieldsVerify] = await db.execute(sqlVerify, [month, currentYear]);
+
+        if (rowsVerify.length === 0) {
+            const sql = 'SELECT * FROM userssc WHERE status = 1';
+            const [rows, fields] = await db.execute(sql);
+            const randomUsers = [];
+            let userRandomExtra = 0;
+
+            if (rows.length < sundaysInMonth.length) {
+                const userFaltante = parseInt(sundaysInMonth.length) - parseInt(rows.length);
+                for (let index = 0; index < userFaltante; index++) {
+                    let randomIndex = Math.floor(Math.random() * rows.length);
+                    userRandomExtra = rows[randomIndex];
+                    rows.push(userRandomExtra);
+                }
+            }
+
+            /* Obtenemos (n) Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
+            for (let index = 0; index < sundaysInMonth.length; index++) {
+                const randomIndex = random(0, rows.length - 1);
+                const selectedUser = rows.splice(randomIndex, 1)[0];
+                randomUsers.push(selectedUser);
+
+            }
+
+            /* Los insertamos en la BD en la Tabla [rolessc]  */
+            let count = 0;
+            for (const user of randomUsers) {
+                const insertSql = 'INSERT INTO rolessc (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)';
+                await db.execute(insertSql, [user.name, sundaysInMonth[count], currentMonth + 1, currentYear, dateCurrently]);
+                count++;
+            }
+
+            /* Regresamos los registros de los rolesB */
+            const [rowsRolsSc, fieldsRolsSc] = await db.execute(sqlVerify, [month, currentYear]);
+            res.status(200).send(rowsRolsSc);
+        } else {
+            res.status(200).send(rowsVerify);
+        }
+
+        db.release();
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
 //Get Events
 app.get('/events', async (req, res) => {
     try {
