@@ -28,11 +28,11 @@ let month = currentMonth + 1;
 const currentYear = currentDate.getFullYear();
 /* Global User => No Aplica */
 const userNotApplied = {
-    id: 10,
-    name: 'No Aplica',
-    status: 1,
-    created_at: "2024-09-23T01:23:11.997Z",
-    updated_at: "2024-09-23T01:23:11.997Z"
+  id: 10,
+  name: "No Aplica",
+  status: 1,
+  created_at: "2024-09-23T01:23:11.997Z",
+  updated_at: "2024-09-23T01:23:11.997Z",
 };
 
 const lastSundayOfMonth = getLastSundayOfMonth(
@@ -132,16 +132,7 @@ async function generateRoles(res, nameRol, nameUser) {
       const randomUsers = [];
 
       /* Si es RolesO => Sólo hay 2 por el momento */
-      if (nameRol == "roleso") {
-        const userFaltante =
-          parseInt(sundaysInMonth.length) - parseInt(rows.length);
-        for (let index = 0; index < userFaltante; index++) {
-          let randomIndex = Math.floor(Math.random() * rows.length);
-          userRandomExtra = rows[randomIndex];
-          rows.push(userRandomExtra);
-        }
-        /* Rol Limpieza No aplica por el Momento */
-      } else if (nameRol === "rolesl") {
+      if (nameRol === "rolesl") {
         for (let index = 0; index < sundaysInMonth.length; index++) {
           const selectedUser = userNotApplied;
           randomUsers.push(selectedUser);
@@ -163,7 +154,22 @@ async function generateRoles(res, nameRol, nameUser) {
         for (let index = 0; index < sundaysInMonth.length; index++) {
           const randomIndex = random(0, rows.length - 1);
           const selectedUser = rows.splice(randomIndex, 1)[0];
-          randomUsers.push(selectedUser);
+          if (selectedUser) {
+            randomUsers.push(selectedUser);
+          }
+        }
+      }
+
+      /* Si no hay suficientes usuarios para el rol debemos duplicar el arreglo hasta obtener el (N) número de Domingos para completar el mes */
+      if (randomUsers.length < sundaysInMonth.length) {
+        const numUserMissing =
+          parseInt(sundaysInMonth.length) - parseInt(randomUsers.length);
+        for (let index = 0; index < numUserMissing; index++) {
+          const randomIndex = random(0, randomUsers.length - 1);
+          const selectedUserMissing = randomUsers[randomIndex];
+          if (selectedUserMissing) {
+            randomUsers.push(selectedUserMissing);
+          }
         }
       }
 
