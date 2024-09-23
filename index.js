@@ -29,7 +29,7 @@ const currentYear = currentDate.getFullYear();
 /* Global User => No Aplica */
 const userNotApplied = {
   id: 10,
-  name: "No Aplica",
+  name: "NoAplica",
   status: 1,
   created_at: "2024-09-23T01:23:11.997Z",
   updated_at: "2024-09-23T01:23:11.997Z",
