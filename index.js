@@ -97,6 +97,11 @@ app.get("/rolessc", async (req, res) => {
   generateRoles(res, "rolessc", "userssc");
 });
 
+//Get Roles Bienvenida Niños to currently month => year
+app.get("/rolesbn", async (req, res) => {
+  generateRoles(res, "rolesbn", "usersbn");
+});
+
 //Get Events
 app.get("/events", async (req, res) => {
   try {
@@ -138,7 +143,7 @@ async function generateRoles(res, nameRol, nameUser) {
           randomUsers.push(selectedUser);
         }
         /* Si el rol es sc => Sólo poner el primer Domingo */
-      } else if (nameRol === "rolessc") {
+      } else if (nameRol === "rolessc" || nameRol === "rolesbn") {
         for (let index = 0; index < sundaysInMonth.length; index++) {
           if (index == 0) {
             const randomIndex = random(0, rows.length - 1);
