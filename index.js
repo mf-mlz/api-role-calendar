@@ -137,13 +137,30 @@ async function generateRoles(res, nameRol, nameUser) {
       const randomUsers = [];
 
       /* Si es RolesO => Sólo hay 2 por el momento */
-      if (nameRol === "rolesl") {
+      /* if (nameRol === "rolesl") {
         for (let index = 0; index < sundaysInMonth.length; index++) {
           const selectedUser = userNotApplied;
           randomUsers.push(selectedUser);
         }
-        /* Si el rol es sc => Sólo poner el primer Domingo */
-      } else if (nameRol === "rolessc" || nameRol === "rolesbn") {
+          /* Si el rol es sc => Sólo poner el primer Domingo 
+        } else */ 
+        /* Si es el Rol de Bienvenida => primero es un niño ya los demas es normal */
+        if (nameRol === "rolesb" /* || nameRol === "rolesbn" */) {
+          for (let index = 0; index < sundaysInMonth.length; index++) {
+            if (index == 0) {
+              /* Get Children */
+              const sql = "SELECT * FROM usersbn WHERE status = 1 ORDER BY RAND() LIMIT 1;";
+              const [rows, fields] = await db.execute(sql);
+              const selectedUser = rows[0];
+              randomUsers.push(selectedUser);
+
+            } else {
+              const randomIndex = random(0, rows.length - 1);
+              const selectedUser = rows.splice(randomIndex, 1)[0];
+              randomUsers.push(selectedUser);
+            }
+          }
+        }else  if (nameRol === "rolessc" /* || nameRol === "rolesbn" */) {
         for (let index = 0; index < sundaysInMonth.length; index++) {
           if (index == 0) {
             const randomIndex = random(0, rows.length - 1);
