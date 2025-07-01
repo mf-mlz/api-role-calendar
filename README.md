@@ -75,8 +75,9 @@ Endpoints principales
 | GET    | /rolesl            | Obtener los roles de limpieza                  |
 | GET    | /events            | Obtener los eventos del mes                    |
 
-📄 Licencia
+
+## 📄 Licencia
 Este proyecto está bajo licencia MIT. Consulta el archivo LICENSE para más detalles.
 
-👤 Autor
+## 👤 Autor
 María Fernanda Martínez Labra – GitHub mf-mlz – maryfermtzlb@gmail.com
