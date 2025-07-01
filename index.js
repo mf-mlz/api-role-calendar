@@ -117,6 +117,21 @@ app.get("/events", async (req, res) => {
   }
 });
 
+// Get birthdays
+app.get("/birthdays", async (req, res) => {
+  try {
+    const db = await connection.getConnection();
+
+    /*  Obtener los roles del Mes */
+    const sql = "SELECT * FROM `birthdays` WHERE month = ?";
+    const [rows, fields] = await db.execute(sql, [month]);
+    res.status(200).send(rows);
+    db.release();
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
 /* Function Add or Select Querys */
 async function generateRoles(res, nameRol, nameUser) {
   try {
