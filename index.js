@@ -28,7 +28,7 @@ let month = currentMonth + 1;
 const currentYear = currentDate.getFullYear();
 /* Global User => No Aplica */
 const userNotApplied = {
-  id: 10,
+  id: 100,
   name: "NoAplica",
   status: 1,
   created_at: "2024-09-23T01:23:11.997Z",
@@ -41,19 +41,36 @@ const lastSundayOfMonth = getLastSundayOfMonth(
 );
 /* Num. Days for last sunday of the month */
 const daysUntilLastSunday = lastSundayOfMonth - currentDate.getDate();
-/* Si faltan menos o igual a 7 días => Agarramos el mes siguiente */
-month = daysUntilLastSunday <= 7 ? month + 1 : month;
+/* Si faltan menos o igual a 10 días => Agarramos el mes siguiente */
+month = daysUntilLastSunday <= 10 ? month + 1 : month;
 
 const numberOfDaysInMonth = new Date(currentYear, month, 0).getDate();
-const sundaysInMonth = [];
+const sundaysAndThursdayInMonth = [];
 const dateCurrently = new Date().toISOString().split(".")[0];
 
 for (let day = 1; day <= numberOfDaysInMonth; day++) {
   const date = new Date(currentYear, month - 1, day);
-  if (date.getDay() === 0) {
-    sundaysInMonth.push(day);
+  let obj = {};
+  if (date.getDay() === 0 || date.getDay() === 4) {
+    obj.dayWeek = date.getDay();
+    obj.day = day;
+    sundaysAndThursdayInMonth.push(obj);
   }
 }
+
+sundaysAndThursdayInMonth.sort((a, b) => {
+  if (a.dayWeek !== b.dayWeek) {
+    return a.dayWeek - b.dayWeek;
+  }
+  return a.day - b.day;
+});
+
+const countSundays = sundaysAndThursdayInMonth.filter(
+  (d) => d.dayWeek === 0
+).length;
+const countThursdays = sundaysAndThursdayInMonth.filter(
+  (d) => d.dayWeek === 4
+).length;
 
 /* Function Get Last Sunday of Month */
 function getLastSundayOfMonth(year, month) {
@@ -63,6 +80,47 @@ function getLastSundayOfMonth(year, month) {
   lastSunday.setDate(lastDayOfMonth.getDate() - lastDayOfWeek);
 
   return lastSunday.getDate();
+}
+
+function shuffleFair(array, nameRol) {
+  const arr = [...array];
+  const result = [];
+
+  for (let i = 0; i <= sundaysAndThursdayInMonth.length; i++) {
+    const lastId = result.length === 0 ? null : result[result.length - 1].id;
+    let choices = lastId === null ? arr : arr.filter((u) => u.id !== lastId);
+
+    if (choices.length === 0) choices = arr;
+
+    const randomIndex = Math.floor(Math.random() * choices.length);
+    let selected =
+      nameRol === "rolesb" && i === 0 ? arr[0] : choices[randomIndex];
+
+    result.push(selected);
+
+    if (nameRol === "rolesb" && i === 0) {
+      arr.shift();
+    }
+  }
+
+  return result;
+}
+
+function getRandomNumbersNoConsecutive(count, min, max) {
+  const result = [];
+  let lastNumber = null;
+
+  for (let i = 0; i < count; i++) {
+    let num;
+    do {
+      num = Math.floor(Math.random() * (max - min + 1)) + min;
+    } while (num === lastNumber);
+
+    result.push(num);
+    lastNumber = num;
+  }
+
+  return result;
 }
 
 /* Module API REST [GET] */
@@ -146,84 +204,110 @@ async function generateRoles(res, nameRol, nameUser) {
     ]);
 
     if (rowsVerify.length === 0) {
-      const sql = "SELECT * FROM " + nameUser + " WHERE status = 1";
+      /* Usuarios Activos de ese Rol */
+      const sql =
+        "SELECT * FROM " +
+        nameUser +
+        " WHERE status = 1 AND (sunday = 1 OR thursday = 1)";
       const [rows, fields] = await db.execute(sql);
+      let usersRole = [];
+      let cantNumbers = getRandomNumbersNoConsecutive(
+        sundaysAndThursdayInMonth.length,
+        0,
+        rows.length - 1
+      );
 
-      const randomUsers = [];
+      /* Si es el Rol de Bienvenida => primero es un niño ya los demas es normal */
+      if (nameRol === "rolesb") {
+        // Primer domingo: obtener un niño aleatorio
+        const sqlChildren =
+          "SELECT * FROM usersbn WHERE status = 1 AND sunday = 1 ORDER BY RAND() LIMIT 1;";
+        const [rowsChildren] = await db.execute(sqlChildren);
 
-      /* Si es RolesO => Sólo hay 2 por el momento */
-      /* if (nameRol === "rolesl") {
-        for (let index = 0; index < sundaysInMonth.length; index++) {
-          const selectedUser = userNotApplied;
-          randomUsers.push(selectedUser);
+        if (rowsChildren.length > 0) {
+          usersRole.push(rowsChildren[0]);
         }
-          /* Si el rol es sc => Sólo poner el primer Domingo 
-        } else */ 
-        /* Si es el Rol de Bienvenida => primero es un niño ya los demas es normal */
-        if (nameRol === "rolesb" /* || nameRol === "rolesbn" */) {
-          for (let index = 0; index < sundaysInMonth.length; index++) {
-            if (index == 0) {
-              /* Get Children */
-              const sql = "SELECT * FROM usersbn WHERE status = 1 ORDER BY RAND() LIMIT 1;";
-              const [rows, fields] = await db.execute(sql);
-              const selectedUser = rows[0];
-              randomUsers.push(selectedUser);
 
-            } else {
-              const randomIndex = random(0, rows.length - 1);
-              const selectedUser = rows.splice(randomIndex, 1)[0];
-              randomUsers.push(selectedUser);
-            }
-          }
-        }else  if (nameRol === "rolessc" /* || nameRol === "rolesbn" */) {
-        for (let index = 0; index < sundaysInMonth.length; index++) {
-          if (index == 0) {
-            const randomIndex = random(0, rows.length - 1);
-            const selectedUser = rows.splice(randomIndex, 1)[0];
-            randomUsers.push(selectedUser);
-          } else {
-            selectedUser = userNotApplied;
-            randomUsers.push(selectedUser);
+        for (let j = 0; j < cantNumbers.length; j++) {
+          if (rows[cantNumbers[j]]) {
+            usersRole.push(rows[cantNumbers[j]]);
           }
         }
+      } else if (nameRol === "rolessc") {
+        usersRole.push(rows[Math.floor(Math.random() * rows.length)]);
       } else {
-        /* Para los Demás Roles Obtenemos (n) Usuarios al azar para formar nuestro arreglo al azar, borrando el usuario Seleccionado para evitar duplicar */
-        for (let index = 0; index < sundaysInMonth.length; index++) {
-          const randomIndex = random(0, rows.length - 1);
-          const selectedUser = rows.splice(randomIndex, 1)[0];
-          if (selectedUser) {
-            randomUsers.push(selectedUser);
+        /* Para los Demás Roles Obtenemos (n) Usuarios al azar para formar nuestro arreglo al azar */
+        for (let j = 0; j < cantNumbers.length; j++) {
+          if (rows[cantNumbers[j]]) {
+            usersRole.push(rows[cantNumbers[j]]);
           }
         }
       }
 
-      /* Si no hay suficientes usuarios para el rol debemos duplicar el arreglo hasta obtener el (N) número de Domingos para completar el mes */
-      if (randomUsers.length < sundaysInMonth.length) {
-        const numUserMissing =
-          parseInt(sundaysInMonth.length) - parseInt(randomUsers.length);
-        for (let index = 0; index < numUserMissing; index++) {
-          const randomIndex = random(0, randomUsers.length - 1);
-          const selectedUserMissing = randomUsers[randomIndex];
-          if (selectedUserMissing) {
-            randomUsers.push(selectedUserMissing);
+      /* Armamos el Arreglo Final */
+      const arrUsersFinal = [];
+      let lastUserName = null;
+
+      for (let j = 0; j < sundaysAndThursdayInMonth.length; j++) {
+        const dayInfo = sundaysAndThursdayInMonth[j];
+        let objUser = [];
+        let possibleUsers = [];
+
+        // Filtrado por día
+        if (dayInfo.dayWeek === 0)
+          possibleUsers = usersRole.filter((u) => u.sunday === 1);
+        if (dayInfo.dayWeek === 4)
+          possibleUsers = usersRole.filter((u) => u.thursday === 1);
+
+        // --- rolesb: en j === 0 tomar directamente el índice 0 ---
+        let randomUser;
+        if (nameRol === "rolesb" && j === 0) {
+          randomUser = possibleUsers[0]; // primer usuario
+        } else if (possibleUsers.length > 0) {
+          // elegir random evitando repetir consecutivo
+          do {
+            randomUser =
+              possibleUsers[Math.floor(Math.random() * possibleUsers.length)];
+          } while (
+            randomUser.name === lastUserName &&
+            possibleUsers.length > 1
+          );
+        }
+
+        // Si se encontró usuario válido
+        if (randomUser) {
+          objUser = [randomUser.name, dayInfo.day, month, currentYear];
+          lastUserName = randomUser.name;
+
+          // rolesn → solo domingos
+          if (nameRol === "rolesn" && dayInfo.dayWeek !== 0) {
+            continue;
           }
+
+          // rolessc → solo un registro
+          if (nameRol === "rolessc" && arrUsersFinal.length > 0) {
+            break;
+          }
+
+          arrUsersFinal.push(objUser);
         }
       }
 
-      /* Los insertamos en la BD en la Tabla [roles]  */
       let count = 0;
-      for (const user of randomUsers) {
-        const insertSql =
-          "INSERT INTO " +
-          nameRol +
-          " (name_user, day, month, year, created_at) VALUES (?, ?, ?, ?, ?)";
+      for (const userData of arrUsersFinal) {
+        const insertSql = `INSERT INTO ${nameRol} (name_user, day, month, year, created_at)  VALUES (?, ?, ?, ?, ?)`;
+
+        const [name, day, monthValue, yearValue] = userData;
+        const createdAt = new Date();
+
         await db.execute(insertSql, [
-          user.name,
-          sundaysInMonth[count],
-          month,
-          currentYear,
-          dateCurrently,
+          name,
+          day,
+          monthValue,
+          yearValue,
+          createdAt,
         ]);
+
         count++;
       }
 
@@ -233,11 +317,10 @@ async function generateRoles(res, nameRol, nameUser) {
         currentYear,
       ]);
       res.status(200).send(rowsRolsB);
+      db.release();
     } else {
       res.status(200).send(rowsVerify);
     }
-
-    db.release();
   } catch (err) {
     res.status(500).send(err);
   }
