@@ -224,11 +224,16 @@ async function birthdaysNotify(res) {
     )}&apikey=${apikey}`;
 
     // Enviar mensaje y verificar respuesta
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (Node.js)" },
+    });
+
     console.log("CallMeBot response:", response.status, response.statusText);
 
     if (response.status !== 200) {
-      throw new Error(`Error enviando WhatsApp, status: ${response.status}, mesage: ${response.statusText}`);
+      throw new Error(
+        `Error enviando WhatsApp, status: ${response.status}, mesage: ${response.statusText}`
+      );
     }
 
     // Responder con éxito
