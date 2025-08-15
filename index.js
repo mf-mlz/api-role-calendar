@@ -5,6 +5,7 @@ const mysql = require("mysql2/promise");
 const app = express();
 const { random } = require("lodash");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 
 app.use(cors());
 
@@ -125,6 +126,10 @@ function getRandomNumbersNoConsecutive(count, min, max) {
 
 /* Module API REST [GET] */
 
+app.get("/birthdaysNotify", async (req, res) => {
+  birthdaysNotify(res);
+});
+
 //Get Roles Bienvenida to currently month => year
 app.get("/rolesb", async (req, res) => {
   generateRoles(res, "rolesb", "usersb");
@@ -189,6 +194,43 @@ app.get("/birthdays", async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+/* Function Notify Birthdays */
+async function birthdaysNotify(res) {
+  try {
+    const conn = await connection.getConnection();
+    const [rows] = await conn.execute(
+      "SELECT name FROM birthdays WHERE day = DAY(CURDATE()) AND month = MONTH(CURDATE())"
+    );
+
+    let mensaje = "";
+    if (rows.length > 0) {
+      mensaje =
+        "🥳🎂 Hoy hay Cumpleaños de los siguientes hermanos de la Iglesia:\n\n";
+      rows.forEach((r) => {
+        mensaje += "*- " + r.name.toUpperCase() + "*\n";
+      });
+    } else {
+      mensaje = "❌ Hoy no hay cumpleaños.";
+    }
+
+    const telefono = process.env.phone;
+    const apikey = process.env.key;
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${telefono}&text=${encodeURIComponent(
+      mensaje
+    )}&apikey=${apikey}`;
+    await fetch(url);
+    res.send({
+      success: true,
+      message: "Mensaje enviado por WhatsApp: \n" + mensaje,
+    });
+
+    conn.release();
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ success: false, error: err.message });
+  }
+}
 
 /* Function Add or Select Querys */
 async function generateRoles(res, nameRol, nameUser) {
