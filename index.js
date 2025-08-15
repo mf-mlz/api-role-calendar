@@ -225,7 +225,12 @@ async function birthdaysNotify(res) {
 
     // Enviar mensaje y verificar respuesta
     const response = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (Node.js)" },
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
     });
 
     console.log("CallMeBot response:", response.status, response.statusText);
