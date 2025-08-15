@@ -212,40 +212,14 @@ async function birthdaysNotify(res) {
     let mensaje = "";
     if (rows.length > 0) {
       mensaje =
-        "🥳🎂 Hoy hay Cumpleaños de los siguientes hermanos de la Iglesia:\n\n";
+        "Hoy hay Cumpleaños de los siguientes hermanos de la Iglesia:\n\n";
       rows.forEach((r) => {
         mensaje += "*- " + r.name.toUpperCase() + "*\n";
       });
     } else {
-      mensaje = "❌ Hoy no hay cumpleaños.";
+      mensaje = "Hoy no hay cumpleaños.";
     }
-
-    // Responder inmediatamente
-    res.send({
-      success: true,
-      message: "El envío de WhatsApp se está procesando: \n" + mensaje,
-    });
-
-    // Preparar URL de CallMeBot
-    const telefono = process.env.phone;
-    const apikey = process.env.key;
-    const url = `https://api.callmebot.com/whatsapp.php?phone=${telefono}&text=${encodeURIComponent(
-      mensaje
-    )}&apikey=${apikey}`;
-
-    // Enviar mensaje usando Puppeteer en background
-    (async () => {
-      const browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath,
-        headless: true,
-      });
-      const page = await browser.newPage();
-      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-      await browser.close();
-      console.log("Mensaje enviado con Puppeteer + chrome-aws-lambda");
-    })();
+    res.send({ message: encodeURIComponent(mensaje) });
   } catch (err) {
     console.error("Error en birthdaysNotify:", err.message);
     if (!res.headersSent) {
@@ -255,6 +229,8 @@ async function birthdaysNotify(res) {
     if (conn) await conn.release();
   }
 }
+
+module.exports = birthdaysNotify;
 
 /* Function Add or Select Querys */
 async function generateRoles(res, nameRol, nameUser) {

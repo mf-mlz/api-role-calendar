@@ -1,15 +1,29 @@
 name: Birthday Notify Every 5 Minutes
 
-# Se ejecuta cada 5 minutos
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Cada 5 minutos
-  workflow_dispatch:       # Permite ejecutarlo manualmente también
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Call birthdaysNotify endpoint
+      - name: Call birthdaysNotify endpoint and generate CallMeBot URL
         run: |
-          curl -X GET https://api-role-calendar.onrender.com/birthdaysNotify
+          echo "Obteniendo mensaje desde el endpoint..."
+          # Obtener el mensaje codificado desde el endpoint
+          MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
+
+          # Definir teléfono y API key
+          TELEFONO="5217714334090"
+          APIKEY="9065110"
+
+          # Ya viene codificado, no necesitamos encode
+          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
+
+          echo "URL generada:"
+          echo $URL
+
+          # Llamar la URL para enviar el WhatsApp
+          curl -s "$URL"
