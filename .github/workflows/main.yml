@@ -1,8 +1,8 @@
-name: Birthday Notify Every 5 Minutes
+name: Birthday Notify Every Day at 9 AM
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 15 * * *"
   workflow_dispatch:
 
 jobs:
