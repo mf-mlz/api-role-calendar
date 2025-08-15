@@ -6,6 +6,7 @@ const app = express();
 const { random } = require("lodash");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const puppeteer = require("puppeteer");
 
 app.use(cors());
 
@@ -223,23 +224,13 @@ async function birthdaysNotify(res) {
       mensaje
     )}&apikey=${apikey}`;
 
-    // Enviar mensaje y verificar respuesta
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
+    // Enviar mensaje usando Puppeteer
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "networkidle2" });
+    await browser.close();
 
-    console.log("CallMeBot response:", response.status, response.statusText);
-
-    if (response.status !== 200) {
-      throw new Error(
-        `Error enviando WhatsApp, status: ${response.status}, mesage: ${response.statusText}`
-      );
-    }
+    console.log("Mensaje enviado con Puppeteer");
 
     // Responder con éxito
     res.send({
@@ -250,7 +241,6 @@ async function birthdaysNotify(res) {
     console.error("Error en birthdaysNotify:", err.message);
     res.status(500).send({ success: false, error: err.message });
   } finally {
-    // Liberar conexión siempre
     conn.release();
   }
 }
