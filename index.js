@@ -7,6 +7,7 @@ const { random } = require("lodash");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const puppeteer = require("puppeteer");
+const chromium = require("chrome-aws-lambda");
 
 app.use(cors());
 
@@ -198,8 +199,10 @@ app.get("/birthdays", async (req, res) => {
 
 /* Function Notify Birthdays */
 async function birthdaysNotify(res) {
-  const conn = await connection.getConnection();
+  let conn;
   try {
+    conn = await connection.getConnection();
+
     // Obtener los cumpleaños del día
     const [rows] = await conn.execute(
       "SELECT name FROM birthdays WHERE day = DAY(CURDATE()) AND month = MONTH(CURDATE())"
@@ -217,6 +220,12 @@ async function birthdaysNotify(res) {
       mensaje = "❌ Hoy no hay cumpleaños.";
     }
 
+    // Responder inmediatamente
+    res.send({
+      success: true,
+      message: "El envío de WhatsApp se está procesando: \n" + mensaje,
+    });
+
     // Preparar URL de CallMeBot
     const telefono = process.env.phone;
     const apikey = process.env.key;
@@ -224,24 +233,26 @@ async function birthdaysNotify(res) {
       mensaje
     )}&apikey=${apikey}`;
 
-    // Enviar mensaje usando Puppeteer
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "networkidle2" });
-    await browser.close();
-
-    console.log("Mensaje enviado con Puppeteer");
-
-    // Responder con éxito
-    res.send({
-      success: true,
-      message: "Mensaje enviado por WhatsApp: \n" + mensaje,
-    });
+    // Enviar mensaje usando Puppeteer en background
+    (async () => {
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath,
+        headless: true,
+      });
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+      await browser.close();
+      console.log("Mensaje enviado con Puppeteer + chrome-aws-lambda");
+    })();
   } catch (err) {
     console.error("Error en birthdaysNotify:", err.message);
-    res.status(500).send({ success: false, error: err.message });
+    if (!res.headersSent) {
+      res.status(500).send({ success: false, error: err.message });
+    }
   } finally {
-    conn.release();
+    if (conn) await conn.release();
   }
 }
 
