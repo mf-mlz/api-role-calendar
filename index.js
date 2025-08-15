@@ -197,12 +197,14 @@ app.get("/birthdays", async (req, res) => {
 
 /* Function Notify Birthdays */
 async function birthdaysNotify(res) {
+  const conn = await connection.getConnection();
   try {
-    const conn = await connection.getConnection();
+    // Obtener los cumpleaños del día
     const [rows] = await conn.execute(
       "SELECT name FROM birthdays WHERE day = DAY(CURDATE()) AND month = MONTH(CURDATE())"
     );
 
+    // Construir mensaje
     let mensaje = "";
     if (rows.length > 0) {
       mensaje =
@@ -214,21 +216,32 @@ async function birthdaysNotify(res) {
       mensaje = "❌ Hoy no hay cumpleaños.";
     }
 
+    // Preparar URL de CallMeBot
     const telefono = process.env.phone;
     const apikey = process.env.key;
     const url = `https://api.callmebot.com/whatsapp.php?phone=${telefono}&text=${encodeURIComponent(
       mensaje
     )}&apikey=${apikey}`;
-    await fetch(url);
+
+    // Enviar mensaje y verificar respuesta
+    const response = await fetch(url);
+    console.log("CallMeBot response:", response.status, response.statusText);
+
+    if (response.status !== 200) {
+      throw new Error(`Error enviando WhatsApp, status: ${response.status}, mesage: ${response.statusText}`);
+    }
+
+    // Responder con éxito
     res.send({
       success: true,
       message: "Mensaje enviado por WhatsApp: \n" + mensaje,
     });
-
-    conn.release();
   } catch (err) {
-    console.error(err);
+    console.error("Error en birthdaysNotify:", err.message);
     res.status(500).send({ success: false, error: err.message });
+  } finally {
+    // Liberar conexión siempre
+    conn.release();
   }
 }
 
