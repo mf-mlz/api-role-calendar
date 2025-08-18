@@ -182,14 +182,16 @@ app.get("/events", async (req, res) => {
   }
 });
 
-// Get birthdays
+/* Get birthdays */
 app.get("/birthdays", async (req, res) => {
   try {
     const db = await connection.getConnection();
 
-    /*  Obtener los roles del Mes */
+    const monthSelected = req.query.month || month;
+
     const sql = "SELECT * FROM `birthdays` WHERE month = ?";
-    const [rows, fields] = await db.execute(sql, [month]);
+    const [rows] = await db.execute(sql, [monthSelected]);
+
     res.status(200).send(rows);
     db.release();
   } catch (err) {
@@ -229,8 +231,6 @@ async function birthdaysNotify(res) {
     if (conn) await conn.release();
   }
 }
-
-module.exports = birthdaysNotify;
 
 /* Function Add or Select Querys */
 async function generateRoles(res, nameRol, nameUser) {
