@@ -204,7 +204,7 @@ async function birthdaysNotify(res) {
     let mensaje = "";
     if (rows.length > 0) {
       rows.forEach((r) => {
-        mensaje += `*-${encodeURIComponent(r.name.toUpperCase())}*\n Link de Descarga: https://calendar-role-mfmlz.netlify.app/generateImg/${r.name}/${r.day}/${months[r.month]}/${currentYear} \n`;
+        mensaje += `${encodeURIComponent("Hoy es el cumpleaños de los siguientes hermanos: \n")}*-${encodeURIComponent(r.name.toUpperCase())}*\n Link de Descarga: https://calendar-role-mfmlz.netlify.app/generateImg/${r.name}/${r.day}/${months[r.month]}/${currentYear} \n`;
       });
     } else {
       mensaje = "Hoy no hay cumpleaños.";
@@ -307,7 +307,7 @@ async function generateRoles(res, nameRol, nameUser) {
           if (nameRol === "rolesn" && dayInfo.dayWeek !== 0) {
             continue;
           }
-          
+
           if (nameRol === "rolessc" && arrUsersFinal.length > 0) {
             break;
           }

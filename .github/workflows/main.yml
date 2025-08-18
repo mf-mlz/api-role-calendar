@@ -2,24 +2,28 @@ name: Birthday Notify Every Day at 9 AM
 
 on:
   schedule:
+    # Esto se ejecuta todos los días a las 9 AM hora de México (UTC-6)
     - cron: "0 15 * * *"
   workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Call birthdaysNotify endpoint and generate CallMeBot URL
+      - name: Enviar notificación de cumpleaños por WhatsApp
+        env:
+          TELEFONO: ${{ secrets.CALLMEBOT_PHONE }}
+          APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
         run: |
           echo "Obteniendo mensaje desde el endpoint..."
-          # Obtener el mensaje codificado desde el endpoint
           MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
 
-          # Usar secrets en vez de hardcode
-          TELEFONO="${{ secrets.CALLMEBOT_PHONE }}"
-          APIKEY="${{ secrets.CALLMEBOT_APIKEY }}"
+          echo "Mensaje recibido: $MESSAGE"
 
           URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
 
           echo "Enviando WhatsApp..."
           curl -s "$URL"
+
+          echo "¡Notificación enviada!"
