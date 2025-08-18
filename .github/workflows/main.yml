@@ -15,15 +15,11 @@ jobs:
           # Obtener el mensaje codificado desde el endpoint
           MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
 
-          # Definir teléfono y API key
-          TELEFONO="5217714334090"
-          APIKEY="9065110"
+          # Usar secrets en vez de hardcode
+          TELEFONO="${{ secrets.CALLMEBOT_PHONE }}"
+          APIKEY="${{ secrets.CALLMEBOT_APIKEY }}"
 
-          # Ya viene codificado, no necesitamos encode
           URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
 
-          echo "URL generada:"
-          echo $URL
-
-          # Llamar la URL para enviar el WhatsApp
+          echo "Enviando WhatsApp..."
           curl -s "$URL"

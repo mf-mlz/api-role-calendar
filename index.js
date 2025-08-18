@@ -51,6 +51,22 @@ const numberOfDaysInMonth = new Date(currentYear, month, 0).getDate();
 const sundaysAndThursdayInMonth = [];
 const dateCurrently = new Date().toISOString().split(".")[0];
 
+const months = {
+  1: "Enero",
+  2: "Febrero",
+  3: "Marzo",
+  4: "Abril",
+  5: "Mayo",
+  6: "Junio",
+  7: "Julio",
+  8: "Agosto",
+  9: "Septiembre",
+  10: "Octubre",
+  11: "Noviembre",
+  12: "Diciembre",
+};
+
+
 for (let day = 1; day <= numberOfDaysInMonth; day++) {
   const date = new Date(currentYear, month - 1, day);
   let obj = {};
@@ -83,30 +99,6 @@ function getLastSundayOfMonth(year, month) {
   lastSunday.setDate(lastDayOfMonth.getDate() - lastDayOfWeek);
 
   return lastSunday.getDate();
-}
-
-function shuffleFair(array, nameRol) {
-  const arr = [...array];
-  const result = [];
-
-  for (let i = 0; i <= sundaysAndThursdayInMonth.length; i++) {
-    const lastId = result.length === 0 ? null : result[result.length - 1].id;
-    let choices = lastId === null ? arr : arr.filter((u) => u.id !== lastId);
-
-    if (choices.length === 0) choices = arr;
-
-    const randomIndex = Math.floor(Math.random() * choices.length);
-    let selected =
-      nameRol === "rolesb" && i === 0 ? arr[0] : choices[randomIndex];
-
-    result.push(selected);
-
-    if (nameRol === "rolesb" && i === 0) {
-      arr.shift();
-    }
-  }
-
-  return result;
 }
 
 function getRandomNumbersNoConsecutive(count, min, max) {
@@ -205,23 +197,19 @@ async function birthdaysNotify(res) {
   try {
     conn = await connection.getConnection();
 
-    // Obtener los cumpleaños del día
     const [rows] = await conn.execute(
-      "SELECT name FROM birthdays WHERE day = DAY(CURDATE()) AND month = MONTH(CURDATE())"
+      "SELECT day, name, month FROM birthdays WHERE day = DAY(CURDATE()) AND month = MONTH(CURDATE())"
     );
 
-    // Construir mensaje
     let mensaje = "";
     if (rows.length > 0) {
-      mensaje =
-        "Hoy hay Cumpleaños de los siguientes hermanos de la Iglesia:\n\n";
       rows.forEach((r) => {
-        mensaje += "*- " + r.name.toUpperCase() + "*\n";
+        mensaje += `*-${encodeURIComponent(r.name.toUpperCase())}*\n Link de Descarga: https://calendar-role-mfmlz.netlify.app/generateImg/${r.name}/${r.day}/${months[r.month]}/${currentYear} \n`;
       });
     } else {
       mensaje = "Hoy no hay cumpleaños.";
     }
-    res.send({ message: encodeURIComponent(mensaje) });
+    res.send({ message: mensaje });
   } catch (err) {
     console.error("Error en birthdaysNotify:", err.message);
     if (!res.headersSent) {
@@ -261,7 +249,6 @@ async function generateRoles(res, nameRol, nameUser) {
 
       /* Si es el Rol de Bienvenida => primero es un niño ya los demas es normal */
       if (nameRol === "rolesb") {
-        // Primer domingo: obtener un niño aleatorio
         const sqlChildren =
           "SELECT * FROM usersbn WHERE status = 1 AND sunday = 1 ORDER BY RAND() LIMIT 1;";
         const [rowsChildren] = await db.execute(sqlChildren);
@@ -295,18 +282,15 @@ async function generateRoles(res, nameRol, nameUser) {
         let objUser = [];
         let possibleUsers = [];
 
-        // Filtrado por día
         if (dayInfo.dayWeek === 0)
           possibleUsers = usersRole.filter((u) => u.sunday === 1);
         if (dayInfo.dayWeek === 4)
           possibleUsers = usersRole.filter((u) => u.thursday === 1);
 
-        // --- rolesb: en j === 0 tomar directamente el índice 0 ---
         let randomUser;
         if (nameRol === "rolesb" && j === 0) {
-          randomUser = possibleUsers[0]; // primer usuario
+          randomUser = possibleUsers[0];
         } else if (possibleUsers.length > 0) {
-          // elegir random evitando repetir consecutivo
           do {
             randomUser =
               possibleUsers[Math.floor(Math.random() * possibleUsers.length)];
@@ -316,17 +300,14 @@ async function generateRoles(res, nameRol, nameUser) {
           );
         }
 
-        // Si se encontró usuario válido
         if (randomUser) {
           objUser = [randomUser.name, dayInfo.day, month, currentYear];
           lastUserName = randomUser.name;
-
-          // rolesn → solo domingos
+ 
           if (nameRol === "rolesn" && dayInfo.dayWeek !== 0) {
             continue;
           }
-
-          // rolessc → solo un registro
+          
           if (nameRol === "rolessc" && arrUsersFinal.length > 0) {
             break;
           }
