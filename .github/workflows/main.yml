@@ -16,8 +16,8 @@ jobs:
           MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
 
           # Definir teléfono y API key
-          TELEFONO="5217714334090"
-          APIKEY="9065110"
+          TELEFONO="${{ secrets.CALLMEBOT_PHONE }}"
+          APIKEY="${{ secrets.CALLMEBOT_APIKEY }}"
 
           # Convertir mensaje a URL seguro
           ENCODED_MESSAGE=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$MESSAGE'''))")
