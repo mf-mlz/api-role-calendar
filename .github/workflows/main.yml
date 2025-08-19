@@ -1,29 +1,21 @@
-name: Birthday Notify Every Day at 9 AM
+- name: Call birthdaysNotify endpoint and generate CallMeBot URL
+  run: |
+    echo "Obteniendo mensaje desde el endpoint..."
+    # Obtener el mensaje desde el endpoint
+    MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
 
-on:
-  schedule:
-    - cron: "0 15 * * *"
-  workflow_dispatch:
+    # Definir teléfono y API key
+    TELEFONO="5217714334090"
+    APIKEY="9065110"
 
-jobs:
-  notify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Call birthdaysNotify endpoint and generate CallMeBot URL
-        run: |
-          echo "Obteniendo mensaje desde el endpoint..."
-          # Obtener el mensaje codificado desde el endpoint
-          MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
+    # Convertir mensaje a URL safe
+    ENCODED_MESSAGE=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$MESSAGE'''))")
 
-          # Definir teléfono y API key
-          TELEFONO="5217714334090"
-          APIKEY="9065110"
+    # Armar la URL con mensaje codificado
+    URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${ENCODED_MESSAGE}&apikey=${APIKEY}"
 
-          # Ya viene codificado, no necesitamos encode
-          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
+    echo "URL generada:"
+    echo "$URL"
 
-          echo "URL generada:"
-          echo $URL
-
-          # Llamar la URL para enviar el WhatsApp
-          curl -s "$URL"
+    # Llamar la URL para enviar el WhatsApp
+    curl -s "$URL"
