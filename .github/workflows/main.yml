@@ -12,20 +12,18 @@ jobs:
       - name: Call birthdaysNotify endpoint and generate CallMeBot URL
         run: |
           echo "Obteniendo mensaje desde el endpoint..."
-          RESPONSE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify)
-          echo "Respuesta cruda: $RESPONSE"
+          # Obtener el mensaje codificado desde el endpoint
+          MESSAGE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify | jq -r '.message')
 
-          # Extraer message
-          MESSAGE=$(echo "$RESPONSE" | jq -r '.message')
-          echo "Mensaje crudo: $MESSAGE"
+          # Definir teléfono y API key
+          TELEFONO="5217714334090"
+          APIKEY="9065110"
 
-          # Codificar URL correctamente
-          MESSAGE_ENCODED=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$MESSAGE")
-          echo "Mensaje codificado: $MESSAGE_ENCODED"
+          # Ya viene codificado, no necesitamos encode
+          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
 
-          TELEFONO="${{ secrets.CALLMEBOT_PHONE }}"
-          APIKEY="${{ secrets.CALLMEBOT_APIKEY }}"
+          echo "URL generada:"
+          echo $URL
 
-          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE_ENCODED}&apikey=${APIKEY}"
-          echo "Enviando WhatsApp..."
+          # Llamar la URL para enviar el WhatsApp
           curl -s "$URL"
