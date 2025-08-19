@@ -23,7 +23,7 @@ jobs:
           ENCODED_MESSAGE=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$MESSAGE'''))")
 
           # Armar la URL con mensaje codificado
-          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${ENCODED_MESSAGE}&apikey=${APIKEY}"
+          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${ENCODED_MESSAGE}&apikey=${APIKEY}&text=urlencoded=1"
 
           echo "URL generada:"
           echo "$URL"
