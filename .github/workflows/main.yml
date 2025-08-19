@@ -15,16 +15,17 @@ jobs:
           RESPONSE=$(curl -s -X GET https://api-role-calendar.onrender.com/birthdaysNotify)
           echo "Respuesta cruda: $RESPONSE"
 
-          # Extraer el campo message usando jq
+          # Extraer message
           MESSAGE=$(echo "$RESPONSE" | jq -r '.message')
-          echo "Mensaje procesado: $MESSAGE"
+          echo "Mensaje crudo: $MESSAGE"
 
-          # Usar secrets para CallMeBot
+          # Codificar URL correctamente
+          MESSAGE_ENCODED=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$MESSAGE")
+          echo "Mensaje codificado: $MESSAGE_ENCODED"
+
           TELEFONO="${{ secrets.CALLMEBOT_PHONE }}"
           APIKEY="${{ secrets.CALLMEBOT_APIKEY }}"
 
-          # Generar URL y enviar WhatsApp
-          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE}&apikey=${APIKEY}"
+          URL="https://api.callmebot.com/whatsapp.php?phone=${TELEFONO}&text=${MESSAGE_ENCODED}&apikey=${APIKEY}"
           echo "Enviando WhatsApp..."
           curl -s "$URL"
-          echo "Mensaje Enviado"
